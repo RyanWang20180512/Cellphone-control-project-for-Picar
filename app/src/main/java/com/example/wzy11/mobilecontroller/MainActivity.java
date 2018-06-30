@@ -1,5 +1,6 @@
 package com.example.wzy11.mobilecontroller;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -8,15 +9,20 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity{
 
+public class MainActivity extends AppCompatActivity{
+    final String host="192.168.5.176";
+    final int port=50;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Intent startTcpServiceIntent=new Intent(MainActivity.this,TcpCommandService.class);
+        startTcpServiceIntent.putExtra("tcpHost",host);
+        startTcpServiceIntent.putExtra("tcpPort",port);
+        startService(startTcpServiceIntent);
         initButtons();
     }
-
 
     /**
      * Init the Direction Buttons and Camera Buttons, set OnTouchListener for these buttons so 
@@ -57,10 +63,12 @@ public class MainActivity extends AppCompatActivity{
             switch (event.getAction()){
                 case MotionEvent.ACTION_UP:
                     /*Add send command code here*/
+
                     Toast.makeText(MainActivity.this,buttonUpCommand,Toast.LENGTH_SHORT).show();
                     break;
                 case MotionEvent.ACTION_DOWN:
                     /*Add send command code here*/
+
                     Toast.makeText(MainActivity.this,buttonDownCommand,Toast.LENGTH_SHORT).show();
                     break;
                 default:
