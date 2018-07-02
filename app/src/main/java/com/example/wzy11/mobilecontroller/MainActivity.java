@@ -1,8 +1,11 @@
 package com.example.wzy11.mobilecontroller;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -17,6 +20,18 @@ public class MainActivity extends AppCompatActivity{
     final String host="192.168.137.1";
     final int port=50;
     public static Context context;
+    private TcpCommandService.SendCommandBinder sendCommandBinder=null; //Use this binder to notify service sending command data
+    private ServiceConnection tcpConnection=new ServiceConnection() { //The connection between Main activity and TcpCommandService
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            sendCommandBinder=(TcpCommandService.SendCommandBinder)service;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -25,9 +40,19 @@ public class MainActivity extends AppCompatActivity{
         Intent startTcpServiceIntent=new Intent(this,TcpCommandService.class);
         startTcpServiceIntent.putExtra("tcpHost",host);
         startTcpServiceIntent.putExtra("tcpPort",port);
+        //Start and bind TcpCommandService
         startService(startTcpServiceIntent);
+        bindService(startTcpServiceIntent,tcpConnection,BIND_AUTO_CREATE);
         initButtons();
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unbindService(tcpConnection);
+        stopService(new Intent(this,TcpCommandService.class));
+    }
+
 
     /**
      * Init the Direction Buttons and Camera Buttons, set OnTouchListener for these buttons so 
@@ -67,13 +92,13 @@ public class MainActivity extends AppCompatActivity{
         public boolean onTouch(View v, MotionEvent event) {
             switch (event.getAction()){
                 case MotionEvent.ACTION_UP:
-                    /*Add send command code here*/
-
+                    //Notify the TcpCommandService to send command
+                    sendCommandBinder.sendCommand(buttonUpCommand);
                     Toast.makeText(MainActivity.this,buttonUpCommand,Toast.LENGTH_SHORT).show();
                     break;
                 case MotionEvent.ACTION_DOWN:
-                    /*Add send command code here*/
-
+                    //Notify the TcpCommandService to send command
+                    sendCommandBinder.sendCommand(buttonDownCommand);
                     Toast.makeText(MainActivity.this,buttonDownCommand,Toast.LENGTH_SHORT).show();
                     break;
                 default:
