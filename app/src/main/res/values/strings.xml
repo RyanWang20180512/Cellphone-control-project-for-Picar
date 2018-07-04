@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">MobileController</string>
+    <string name="title_activity_initial">InitialActivity</string>
 </resources>

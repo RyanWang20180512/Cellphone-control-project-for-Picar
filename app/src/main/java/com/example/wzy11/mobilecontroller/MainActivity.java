@@ -17,8 +17,8 @@ import android.widget.Toast;
 
 
 public class MainActivity extends AppCompatActivity{
-    final String host="192.168.137.1";
-    final int port=50;
+    private String host;
+    private int port;
     public static Context context;
     private TcpCommandService.SendCommandBinder sendCommandBinder=null; //Use this binder to notify service sending command data
     private ServiceConnection tcpConnection=new ServiceConnection() { //The connection between Main activity and TcpCommandService
@@ -37,6 +37,10 @@ public class MainActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         context=getApplicationContext(); //Get the context of this activity so that the static functions can use
+        Intent startInfoIntent=getIntent();
+        host=startInfoIntent.getStringExtra("tcpHost");
+        port=startInfoIntent.getIntExtra("tcpPort",50);
+
         Intent startTcpServiceIntent=new Intent(this,TcpCommandService.class);
         startTcpServiceIntent.putExtra("tcpHost",host);
         startTcpServiceIntent.putExtra("tcpPort",port);
