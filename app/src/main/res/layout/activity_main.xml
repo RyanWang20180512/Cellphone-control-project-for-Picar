@@ -48,6 +48,12 @@
             android:layout_toRightOf="@+id/textViewDir"
             android:layout_centerVertical="true"
             android:text="R" />
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/buttonClose"
+            android:layout_alignParentBottom="true"
+            android:text="close"/>
     </RelativeLayout>
     <RelativeLayout
         android:layout_width="0dp"
@@ -95,6 +101,13 @@
             android:layout_toRightOf="@+id/textViewCam"
             android:layout_centerVertical="true"
             android:text="R" />
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/buttonShutdown"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:text="shutdown"/>
     </RelativeLayout>
 
 </LinearLayout>

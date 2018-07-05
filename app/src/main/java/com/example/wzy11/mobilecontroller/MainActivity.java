@@ -20,7 +20,7 @@ public class MainActivity extends AppCompatActivity{
     private String host;
     private int port;
     public static Context context;
-    private TcpCommandService.SendCommandBinder sendCommandBinder=null; //Use this binder to notify service sending command data
+    public TcpCommandService.SendCommandBinder sendCommandBinder=null; //Use this binder to notify service sending command data
     private ServiceConnection tcpConnection=new ServiceConnection() { //The connection between Main activity and TcpCommandService
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -36,7 +36,9 @@ public class MainActivity extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        context=getApplicationContext(); //Get the context of this activity so that the static functions can use
+        //context=getApplicationContext();
+        context=this;//Get the context of this activity so that the static functions can use
+
         Intent startInfoIntent=getIntent();
         host=startInfoIntent.getStringExtra("tcpHost");
         port=startInfoIntent.getIntExtra("tcpPort",50);
@@ -80,6 +82,22 @@ public class MainActivity extends AppCompatActivity{
         buttonCamLeft.setOnTouchListener(new ButtonListener("CamStop","CamLeft"));
         Button buttonCamRight=(Button)findViewById(R.id.buttonCamRight);
         buttonCamRight.setOnTouchListener(new ButtonListener("CamStop","CamRight"));
+
+        Button buttonClose=(Button)findViewById(R.id.buttonClose);
+        buttonClose.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendCommandBinder.closeOrShutdown("Close"); //Notify the car this client will close the connection
+            }
+        });
+
+        Button buttonShutdown=(Button)findViewById(R.id.buttonShutdown);
+        buttonShutdown.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendCommandBinder.closeOrShutdown("Shutdown"); //Notify the car to shutdown itself
+            }
+        });
     }
 
     /**
@@ -114,6 +132,7 @@ public class MainActivity extends AppCompatActivity{
 
 
     public static final int TOAST_TEXT=1;
+    public static final int CLOSE_OR_SHUTDOWN=2;
     /**
      * Use the handler to update main activity according to service's message
      */
@@ -123,6 +142,9 @@ public class MainActivity extends AppCompatActivity{
             switch (msg.what){
                 case TOAST_TEXT: //Display the toast according to the message from service
                     Toast.makeText(context,(String)msg.obj,Toast.LENGTH_SHORT).show();
+                    break;
+                case CLOSE_OR_SHUTDOWN: //The tcp service has sent close or shutdown command, and the main activity should exit now
+                    ((MainActivity)context).finish();
                     break;
                 default:
                     break;

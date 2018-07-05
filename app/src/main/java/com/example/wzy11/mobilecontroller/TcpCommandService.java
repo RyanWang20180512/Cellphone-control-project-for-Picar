@@ -49,6 +49,10 @@ public class TcpCommandService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        CloseSocket();
+    }
+
+    private void CloseSocket(){
         if(commandSocket!=null){
             try{
                 commandSocket.close();
@@ -98,10 +102,17 @@ public class TcpCommandService extends Service {
      * The main activity can use this binder to send command data
      */
     class SendCommandBinder extends Binder{
+
         void sendCommand(String command){
             if(commandSocket!=null){
                 new Thread(new sendDataThread(command)).start();
             }
+        }
+
+        //use this method to send close or shutdown command to the car, and then notify the mainactivity to exit
+        void closeOrShutdown(String command){
+            new Thread(new sendDataThread(command)).start();
+            sendMessageToActivity(MainActivity.CLOSE_OR_SHUTDOWN,"");
         }
     }
 
@@ -117,12 +128,16 @@ public class TcpCommandService extends Service {
         @Override
         public void run() {
             try{
-                OutputStream outputStream=commandSocket.getOutputStream();
-                byte[] sendData=command.getBytes(Charset.forName("UTF-8"));
-                outputStream.write(sendData,0,sendData.length);
-                outputStream.flush();
+                if(commandSocket!=null){
+                    OutputStream outputStream=commandSocket.getOutputStream();
+                    byte[] sendData=command.getBytes(Charset.forName("UTF-8"));
+                    outputStream.write(sendData,0,sendData.length);
+                    outputStream.flush();
+                }
             }catch (IOException e){
                 e.printStackTrace();
+                CloseSocket();
+                sendMessageToActivity(MainActivity.TOAST_TEXT,"connect closed");
             }
         }
     }
