@@ -5,6 +5,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -14,6 +15,8 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 
@@ -21,6 +24,9 @@ public class MainActivity extends AppCompatActivity{
     private String host;
     private int port;
     public static Context context;
+    private TextView textViewTest;
+    private TextView showImageViewSize;
+    private ImageView cameraDisplayImageView;
     public TcpCommandService.SendCommandBinder sendCommandBinder=null; //Use this binder to notify service sending command data
     private ServiceConnection tcpConnection=new ServiceConnection() { //The connection between Main activity and TcpCommandService
         @Override
@@ -33,6 +39,18 @@ public class MainActivity extends AppCompatActivity{
         }
     };
 
+    public UDPFrameRecService.NoticeBinder noticeUDPBinder=null;//Use this binder to notify UDP service
+    private ServiceConnection udpConnection=new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            noticeUDPBinder=(UDPFrameRecService.NoticeBinder)service;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+
+        }
+    };
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,6 +69,16 @@ public class MainActivity extends AppCompatActivity{
         startService(startTcpServiceIntent);
         bindService(startTcpServiceIntent,tcpConnection,BIND_AUTO_CREATE);
         initButtons();
+
+        //Start and bind UDPFrameRecService
+        startService(new Intent(this,UDPFrameRecService.class));
+        bindService(new Intent(this,UDPFrameRecService.class),udpConnection,BIND_AUTO_CREATE);
+
+        //textViewTest=(TextView)findViewById(R.id.texttest);
+        cameraDisplayImageView=(ImageView)findViewById(R.id.cameraDisplay);
+
+        showImageViewSize=(TextView)findViewById(R.id.imageViewSize);
+
     }
 
     @Override
@@ -58,6 +86,8 @@ public class MainActivity extends AppCompatActivity{
         super.onDestroy();
         unbindService(tcpConnection);
         stopService(new Intent(this,TcpCommandService.class));
+        unbindService(udpConnection);
+        stopService(new Intent(this,UDPFrameRecService.class));
     }
 
 
@@ -134,6 +164,7 @@ public class MainActivity extends AppCompatActivity{
 
     public static final int TOAST_TEXT=1;
     public static final int CLOSE_OR_SHUTDOWN=2;
+    public static final int UPDATE_IMAGEVIEW=3;
     /**
      * Use the handler to update main activity according to service's message
      */
@@ -147,6 +178,12 @@ public class MainActivity extends AppCompatActivity{
                 case CLOSE_OR_SHUTDOWN: //The tcp service has sent close or shutdown command, and the main activity should exit now
                     ((MainActivity)context).finish();
                     break;
+                case UPDATE_IMAGEVIEW: //The udp service has received a frame, the main activity should display it
+                    //((MainActivity)context).textViewTest.setText((String)msg.obj);
+                    //int width=((MainActivity)context).cameraDisplayImageView.getWidth();
+                    //int height=((MainActivity)context).cameraDisplayImageView.getHeight();
+                    //((MainActivity)context).showImageViewSize.setText("width: "+width+" height: "+height);
+                    ((MainActivity)context).cameraDisplayImageView.setImageBitmap((Bitmap)msg.obj);
                 default:
                     break;
             }
