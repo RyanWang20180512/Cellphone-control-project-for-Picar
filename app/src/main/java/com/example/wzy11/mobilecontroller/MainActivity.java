@@ -147,12 +147,12 @@ public class MainActivity extends AppCompatActivity{
                 case MotionEvent.ACTION_UP:
                     //Notify the TcpCommandService to send command
                     sendCommandBinder.sendCommand(buttonUpCommand);
-                    Toast.makeText(MainActivity.this,buttonUpCommand,Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(MainActivity.this,buttonUpCommand,Toast.LENGTH_SHORT).show();
                     break;
                 case MotionEvent.ACTION_DOWN:
                     //Notify the TcpCommandService to send command
                     sendCommandBinder.sendCommand(buttonDownCommand);
-                    Toast.makeText(MainActivity.this,buttonDownCommand,Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(MainActivity.this,buttonDownCommand,Toast.LENGTH_SHORT).show();
                     break;
                 default:
                     break;
